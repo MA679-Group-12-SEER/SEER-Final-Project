@@ -1,0 +1,38 @@
+---
+title: "Group 12 Report"
+author: "Yinfeng Zhou, Zhiwei liang, Xiaozhou Lu, Fan Feng"
+date: "2021/5/4"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+pacman::p_load("tidyverse","magrittr","readxl")
+```
+
+# Abstract
+# Introduction
+### Backgroud
+### Goal
+### Data Description
+# EDA
+# Modelling
+# Results and Conclustion
+# Discussion
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
