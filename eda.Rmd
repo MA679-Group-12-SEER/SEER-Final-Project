@@ -1,0 +1,110 @@
+---
+title: "MA679 Final Project"
+author: "Group 12"
+date: "2021/5/2"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(sqldf)
+library(reshape2)
+```
+
+```{r}
+seer<- read.csv("seer_final.csv",header = T)
+colnames(seer)
+```
+```{r,echo=FALSE,message=FALSE}
+seer%>%group_by(Race,Sex)%>%summarise(count=n())%>%group_by(Race)%>%
+  summarise(count=count,percent=count/sum(count),Sex=Sex)->g1
+```
+
+```{r}
+#,fig.height=3,fig.width=4}
+ggplot(g1,aes(x=Race,y=count,fill=Sex))+
+  geom_histogram(stat="identity",position = "stack")+
+  geom_text(mapping = aes(label =round(percent,2)), size = 4, colour = 'black',
+            position = position_stack())+
+  #theme(axis.text.x  = element_text(angle=30, vjust=0.5))
+  scale_x_discrete(guide = guide_axis(n.dodge=2)) 
+```
+The density plot below, on the other hand, shows that among head and neck patients, different races have different distributions. In general, patients from white people are older, while Asian or Pacific Islander have the youngest patients.
+```{r}
+
+ggplot(seer,aes(fill=Race,col=Race,x=Age))+ geom_density(alpha=.2)
+```
+In the boxplot below, we can also tell that different races have different distributions of Insurance. For example, white people generally have less Any Medicaid.
+```{r,echo=FALSE,message=FALSE}
+seer%>%group_by(Insurance,Race)%>%summarise(count=n())%>%group_by(Race)%>%summarise(count=count,percent=count/sum(count),Insurance=Insurance)->g2
+```
+
+```{r}
+ggplot(g2,aes(x=Race,y=count,fill=Insurance))+
+  geom_histogram(stat="identity",position = "stack")+
+  geom_text(mapping = aes(label =round(percent,2)), size = 2, colour = 'black',
+            position = position_stack(0.6))+
+  #theme(axis.text.x  = element_text(angle=30, vjust=0.5))
+  scale_x_discrete(guide = guide_axis(n.dodge=2)) 
+```
+
+
+```{r}
+seer$Nine_Grade= seer$Nine_Grade/100
+seer$High_School= seer$High_School/100
+seer$Atleast_Bachlor= seer$Atleast_Bachlor/100
+seer$Person_Below_Poverty= seer$Person_Below_Poverty/100
+seer$Unemployed= seer$Unemployed/100
+seer$Median_Household_Income = seer$Median_Household_Income*10
+seer$Language_Isolation= seer$Language_Isolation/100
+```
+
+```{r}
+#race_survival<- 
+ggplot(data=seer, aes(x = Race, y = as.numeric(Survival_Months), fill =Race)) +
+        geom_boxplot(alpha=0.7) +
+        scale_y_continuous(name = "Survival Month")+
+        scale_x_discrete(name = "Race")+
+        labs(title="Average Survival Months to Different Races", fill="Race")
+```
+
+```{r}
+race_community<- sqldf("select Race, avg(Nine_Grade) as NineGrade, avg(High_School) as HighSchool, avg(Atleast_Bachlor) as Bachlor, avg(Person_Below_Poverty) as BelowPoverty, avg(Unemployed) as Unemployed, avg(Median_Household_Income) as Income, avg(Language_Isolation) as LanguageIsolation from seer
+                       group by Race")
+
+melt_race<- melt(race_community,id.vars=c("Race"),
+                measure.vars = c("NineGrade","HighSchool","Bachlor","BelowPoverty","Unemployed","LanguageIsolation"),
+                variable.name = "community")
+```
+
+```{r}
+race_percent<- ggplot(data=melt_race)+
+  geom_line(mapping=aes(x=Race,y=value,group=community,color=community))+
+  labs(title="Community Information to different Races", x="Race",y="Percentage" )
+
+race_income<- ggplot(data=race_community)+
+  geom_bar(aes(x=Race,y=Income,fill=Race),stat="identity")+
+  labs(title="Average Income to different Races", x="Race",fill="Race")
+
+race_survival
+race_percent
+race_income
+```
+
+
+```{r}
+death<- sqldf("select Race, Cause_Death from seer")
+for (i in 1:7286){
+  if (str_detect(death$Cause_Death[i], "attributable")){
+    death$dead[i] = 1
+  }else{
+    death$dead[i] = 0
+  }
+}
+death2<- sqldf("select Race, avg(dead) as Death_Rate from death group by Race")
+race_death<- ggplot(data=death2)+
+  geom_bar(aes(x=Race,y=Death_Rate,fill=Race),stat="identity")+
+  labs(title="Death Rate Attributable by This Cancer", x="Race",y="Death_Rate",fill="Race")
+race_death
+```

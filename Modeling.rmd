@@ -1,0 +1,179 @@
+---
+title: "Modeling"
+author: "Group 12"
+date: "5/4/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(data.table)
+library(corrgram)
+```
+
+
+```{r}
+# read the processed data
+seer = read.csv("seer_final.csv")
+seer = seer[,-1]
+# transform as factor and numeric
+seer$Survival_Months = as.numeric(seer$Survival_Months)
+seer$Nine_Grade = as.numeric(seer$Nine_Grade)
+seer$High_School = as.numeric(seer$High_School)
+seer$Atleast_Bachlor = as.numeric(seer$Atleast_Bachlor)
+seer$Person_Below_Poverty = as.numeric(seer$Person_Below_Poverty)
+seer$Unemployed = as.numeric(seer$Unemployed)
+seer$Median_Household_Income = as.numeric(seer$Median_Household_Income)
+seer$Language_Isolation = as.numeric(seer$Language_Isolation)
+
+seer$Race%<>%as.factor()
+seer$Insurance%<>%factor()
+seer$Sex%<>%factor
+```
+
+# Topic 1: Diff between recommend and standard
+
+The variables we choose represent the social information (Sex,Year,Age,Insurance,Nine_Grade, High_School,Atleast_Bachlor,Person_Below_Poverty,Unemployed, Median_Household_Income, Language_Isolation)
+
+
+## Choose Predictors
+
+### choose factor predictors: choose Race
+(Race,Sex,Insurance)
+
+```{r}
+library(vcd)
+tb1 = table(seer$Race,seer$Sex)
+chisq.test(tb1)
+
+tb2 = table(seer$Race,seer$Insurance)
+chisq.test(tb2)
+
+tb3 = table(seer$Sex,seer$Insurance)
+chisq.test(tb3)
+```
+
+
+### choose numeric predictors: cancel High_School
+
+```{r}
+library(leaps)
+##逐步回归法
+#向前回归
+subset.travels2<-regsubsets(Diff_Reco_Sur ~ Year+Age+Nine_Grade+ High_School+Atleast_Bachlor+Person_Below_Poverty+Unemployed+Median_Household_Income+Language_Isolation,seer,method = "forward")
+summary(subset.travels2)
+#向后回归
+subset.travels2<-regsubsets(Diff_Reco_Sur ~ Year+Age+Nine_Grade+ High_School+Atleast_Bachlor+Person_Below_Poverty+Unemployed+Median_Household_Income+Language_Isolation,seer,method = "backward")
+summary(subset.travels2)
+
+```
+
+### lasso regression
+```{r}
+library(dplyr)
+library(lars)
+x = seer %>% 
+  dplyr::select(Age,Nine_Grade,Atleast_Bachlor,Person_Below_Poverty,Unemployed, Median_Household_Income, Language_Isolation)%>%
+  as.matrix()
+
+y = seer %>%
+  dplyr::select(Diff_Reco_Sur)%>%
+  as.matrix()
+
+
+las= lars(x,y,type = "lasso")
+las
+summary(las)
+plot(las)
+#哪个CP值最小（CP值最小最好）
+las$Cp[which.min(las$Cp)]
+#显示所有的β值
+las$beta
+##挑出最好的系数(s是Df+1,就是开头是0那一列)
+coef<-coef.lars(las,mode="step",s=8)
+##把系数为0的全弄出去
+coef[coef!=0]
+#加入截距
+#s的含义和第4部分求取coef中的s相同，代表第几次迭代对应的模型的截距值。且data.frame中自变量的数量和数据框中进行lasso拟合的自变量数目相同，都要写上。
+
+```
+
+
+### ridge regression
+```{r}
+library(MASS)
+rid=lm.ridge(Diff_Reco_Sur ~ Race+Age+Nine_Grade+Atleast_Bachlor+Person_Below_Poverty+Unemployed+Median_Household_Income+Language_Isolation,data = seer)
+summary(rid)
+rid
+```
+
+
+### Diff relationship with Year: no strong correlation
+```{r}
+ggplot(aes(x=Year,y=sum(Diff_Reco_Sur)),data = seer,group = year)+
+geom_bar(stat="identity")
+
+ggplot(aes(x=Year,y=Diff_Reco_Rad),data = seer)+
+geom_bar(stat="identity")
+```
+
+
+## logistic regression
+```{r}
+fit1=glm(Diff_Reco_Sur ~ Race+Age+Nine_Grade+Atleast_Bachlor+Person_Below_Poverty+Unemployed+Median_Household_Income+Language_Isolation,data = seer,family=binomial(link="logit"))
+summary(fit1)
+
+fit11=glm(Diff_Reco_Rad ~ Race+Age+Nine_Grade+Atleast_Bachlor+Person_Below_Poverty+Unemployed+Median_Household_Income+Language_Isolation,data = seer,family=binomial(link="logit"))
+summary(fit11)
+
+fit111=glm(Diff_Reco_Chem ~ Race+Age+Nine_Grade+Atleast_Bachlor+Person_Below_Poverty+Unemployed+Median_Household_Income+Language_Isolation,data = seer,family=binomial(link="logit"))
+summary(fit111)
+
+```
+
+
+# Topic 2: Diff between recommend and actual
+
+```{r}
+library(dplyr)
+fit2 = glm(surgery_refused ~ Race+Age+Nine_Grade+Atleast_Bachlor+Person_Below_Poverty+Unemployed+Median_Household_Income+Language_Isolation,data = seer %>% filter(surgery_recommended ==1),family=binomial(link="logit"))
+summary(fit2)
+
+fit22 = glm(radiation_refused ~ Race+Age+Nine_Grade+Atleast_Bachlor+Person_Below_Poverty+Unemployed+Median_Household_Income+Language_Isolation,data = seer %>% filter(radiation_recommended ==1),family=binomial(link="logit"))
+summary(fit22)
+
+```
+
+
+# Topic 3: Death 
+Do Need Topc3 in report!!!
+```{r}
+# 不需要用我这部分
+library(magrittr)
+colnames(seer)
+seer$Site_Death%<>%as.factor()
+seer$Cause_Death%<>%as.factor()
+
+seer$Vital_Status[seer$Vital_Status=="Dead"]=1
+seer$Vital_Status[seer$Vital_Status=="Alive"]=0
+seer$Vital_Status %<>% as.numeric()
+
+
+cor(seer[,c(21,39,41,43:45)]) #no strong correlation,(no multilinearity)
+#seer[,c(19:22,43:45)]
+
+
+
+fit3 = glm(Vital_Status~Diff_Reco_Sur+Diff_Reco_Rad+Diff_Reco_Chem,data = seer,family=binomial(link="logit"))
+summary(fit3)
+plot(fit3)
+
+# add patient view: refuse recommended surgery and radiation
+fit33 = glm(Vital_Status~Diff_Reco_Sur+Diff_Reco_Rad+Diff_Reco_Chem+surgery_refused+radiation_refused,data = seer %>% filter(surgery_recommended ==1 & radiation_recommended ==1),family=binomial(link="logit"))
+summary(fit33)
+plot(fit33)
+
+```
+
+
+

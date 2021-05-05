@@ -1,0 +1,186 @@
+---
+title: "Data Processing of SEER Project Group 12"
+author: "Yinfeng Zhou, Zhiwei liang, Xiaozhou Lu, Fan Feng"
+date: "2021/4/29"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+pacman::p_load("tidyverse","magrittr","readxl","caret","glmnet","data.table","corrgram","vcd")
+```
+
+# import the dataset
+```{r}
+seer<-read.csv("SEER File 2.csv")
+```
+
+```{r}
+seer%<>%subset(CS.tumor.size..2004.2015.!="Blank(s)")
+seer$CS.tumor.size..2004.2015.%<>%as.numeric()
+seer["T Code"]<-ifelse(seer$CS.tumor.size..2004.2015.%in%seq(1,20),1,
+                       ifelse(seer$CS.tumor.size..2004.2015.%in%seq(21,50),2,
+                              ifelse(seer$CS.tumor.size..2004.2015.%in%seq(51,989),3,-1)))
+
+seer$CS.extension..2004.2015.%<>%as.numeric()
+
+#Hypopharynx
+seer["Extension"]<-ifelse(seer$Site.recode.ICD.O.3.WHO.2008=="Hypopharynx",ifelse(seer$CS.extension..2004.2015. %in% c(550,560,565),3,
+                          ifelse(seer$CS.extension..2004.2015. %in% c(620,630,635,638),4,
+                                 ifelse(seer$CS.extension..2004.2015. %in% c(640,645,650,655,700,760,800,810),5,
+                                        ifelse(seer$CS.extension..2004.2015.==950,0,-1)))),-1)
+
+#Tongue
+seer$Extension[which(seer$Site.recode.ICD.O.3.WHO.2008=="Tongue")]<-ifelse(seer$CS.extension..2004.2015. %in% c(645,640,650),3,
+                          ifelse(seer$CS.extension..2004.2015. %in% c(620,675,710,720,725,735,740,745,750,760,775),4,
+                                 ifelse(seer$CS.extension..2004.2015. %in% c(780,788,790,795,800,810),5,
+                                        ifelse(seer$CS.extension..2004.2015.==950,0,-1))))
+
+#Floor of Mouth
+seer$Extension[which(seer$Site.recode.ICD.O.3.WHO.2008=="Floor of Mouth")]<-ifelse(seer$CS.extension..2004.2015. %in% c(620,635,645,725,760,765,775,780),4,
+                                 ifelse(seer$CS.extension..2004.2015. %in% c(788,790,805,810),5,
+                                        ifelse(seer$CS.extension..2004.2015.==950,0,-1)))
+
+#GumOther
+seer$Extension[which(seer$Site.recode.ICD.O.3.WHO.2008=="Gum and Other Mouth")]<-ifelse(seer$CS.extension..2004.2015. %in% c(720,725,760,770,775),4,
+                                 ifelse(seer$CS.extension..2004.2015. %in% c(788,795,805,810),5,
+                                        ifelse(seer$CS.extension..2004.2015.==950,0,-1)))
+
+#Salivary Gland
+seer$Extension[which(seer$Site.recode.ICD.O.3.WHO.2008=="Salivary Gland")]<-ifelse(seer$CS.extension..2004.2015. %in% c(400,402,405,408),3,
+                          ifelse(seer$CS.extension..2004.2015. %in% c(450,510,515,518,00,620,623,625),4,
+                                 ifelse(seer$CS.extension..2004.2015. %in% c(655,660,710,790,800,810),5,
+                                        ifelse(seer$CS.extension..2004.2015.==950,0,-1))))
+
+#Nasopharynx
+seer$Extension[which(seer$Site.recode.ICD.O.3.WHO.2008=="Nasopharynx")]<-ifelse(seer$CS.extension..2004.2015. %in% c(105,205,305,400,500,505,510),1,
+                                                                                ifelse(seer$CS.extension..2004.2015. %in% c(555,565,585,590),2,
+                                                                                       ifelse(seer$CS.extension..2004.2015. %in% c(605,610,620,645),3,
+                                                                                              ifelse(seer$CS.extension..2004.2015. %in% c(800,810),4,
+                                                                                                     ifelse(seer$CS.extension..2004.2015.==950,0,-1)))))
+#Lip
+seer$Extension[which(seer$Site.recode.ICD.O.3.WHO.2008=="Lip")]<-ifelse(seer$CS.extension..2004.2015. %in% c(725,740,750,760,775,778),4,
+                                                                        ifelse(seer$CS.extension..2004.2015.%in% c(780,785,788,790,800,910),5,ifelse(seer$CS.extension..2004.2015.==950,0,-1)))
+
+#Nasal Cavity
+seer$Extension[which(seer$Site.recode.ICD.O.3.WHO.2008=="Nose, Nasal Cavity and Middle Ear")]<-ifelse(seer$CS.extension..2004.2015. %in% c(105,110,300),1,
+                                                                                ifelse(seer$CS.extension..2004.2015. %in% c(200,205,400,410),2,
+                                                                                       ifelse(seer$CS.extension..2004.2015. %in% c(610,650,660,670,680),3,
+                                                                                              ifelse(seer$CS.extension..2004.2015. %in% c(690,695,705,725),4,
+                                                                                                     ifelse(seer$CS.extension..2004.2015.%in% c(730,740,770,780,810),5,ifelse(seer$CS.extension..2004.2015.==950,0,-1))))))
+
+#Oropharynx
+seer$Extension[which(seer$Site.recode.ICD.O.3.WHO.2008=="Oropharynx")]<-ifelse(seer$CS.extension..2004.2015. %in% c(530,531,533,535,538,540),3,
+                          ifelse(seer$CS.extension..2004.2015. %in% c(610,630,635,650,675,700,705),4,
+                                 ifelse(seer$CS.extension..2004.2015. %in% c(708,710,715,718,720,750,770,800,810),5,
+                                        ifelse(seer$CS.extension..2004.2015.==950,0,-1))))
+seer["Final_T_Code"]<-ifelse(seer$`T Code`>=seer$Extension,seer$`T Code`,seer$Extension)
+seer%<>%subset(Final_T_Code!=-1)
+seer$Final_T_Code%<>%as.numeric()
+```
+
+```{r}
+seer%<>%subset(Site.recode.ICD.O.3.WHO.2008%in%c("Other Oral Cavity and Pharynx","Oropharynx" ,"Hypopharynx","Nasopharynx","Salivary Gland"))
+
+seer$CS.lymph.nodes..2004.2015.%<>%as.numeric()
+seer["N Stage"]<-ifelse(seer$CS.lymph.nodes..2004.2015.%in%c(0,10,20,30,40),"N0",
+                          ifelse(seer$CS.lymph.nodes..2004.2015.%in%c(100,199,110,120,130,180),"N1",
+                                 ifelse(seer$CS.lymph.nodes..2004.2015.%in%c(200,299,210,220,230),"N2",
+                                        ifelse(seer$CS.lymph.nodes..2004.2015.%in%c(399,310,330),"N3",ifelse(seer$CS.lymph.nodes..2004.2015.%in%c(400),"N4",NA)))))
+seer%<>%na.omit()
+seer["T Stage"]<-ifelse(seer$Final_T_Code==1,"T1",
+                        ifelse(seer$Final_T_Code==2,"T2",
+                               ifelse(seer$Final_T_Code==3,"T3",
+                                      ifelse(seer$Final_T_Code==4,"T4a",
+                                             ifelse(seer$Final_T_Code==5,"T4b",
+                                                    ifelse(seer$Final_T_Code==0,"T0","Error"))))))
+seer$Site.recode.ICD.O.3.WHO.2008[seer$Site.recode.ICD.O.3.WHO.2008=="Other Oral Cavity and Pharynx"]<-"Oral Cavity"
+```
+
+# import the dataset NCCN Guidelines.xlsx
+```{r}
+guidelines<-read_excel("NCCN Guidelines.xlsx")
+guidelines%<>%subset(`Primary Site`!="Oropharynx \r\n(+) p16")
+guidelines$`Primary Site`[guidelines$`Primary Site`=="Oropharynx \r\n(-) p16"]<-"Oropharynx"
+```
+
+# join the two dataset
+```{r}
+colnames(seer)[6]<-"Primary Site"
+seer_final<-inner_join(guidelines,seer,by=c("Primary Site","T Stage","N Stage"))
+```
+
+```{r}
+#unique(seer_final$Reason.no.cancer.directed.surgery)
+#unique(seer_final$Radiation.recode)
+seer_final%<>%subset(Reason.no.cancer.directed.surgery != "Unknown; death certificate; or autopsy only (2003+)")
+seer_final["surgery_standard"]<-rep(0,nrow(seer_final))
+seer_final["radiation_standard"]<-rep(0,nrow(seer_final))
+seer_final["chemotherapy_standard"]<-rep(0,nrow(seer_final))
+```
+
+```{r}
+for(i in 1:nrow(seer_final)){
+  if("Surgery" %in% seer_final[i,4:8]){
+  seer_final[i,"surgery_standard"]<-1
+  }
+  if("Radiation" %in% seer_final[i,4:8]){
+  seer_final[i,"radiation_standard"]<-1
+  }
+  if("Radiation and Chemotherapy" %in% seer_final[i,4:8]){
+  seer_final[i,"radiation_standard"]<-1
+  seer_final[i,"chemotherapy_standard"]<-1
+  }
+  if("Chemotherapy and Radiation" %in% seer_final[i,4:8]){
+  seer_final[i,"radiation_standard"]<-1
+  seer_final[i,"chemotherapy_standard"]<-1
+  }
+  if("Chemotherapy and Surgery" %in% seer_final[i,4:8]){
+  seer_final[i,"chemotherapy_standard"]<-1
+  seer_final[i,"surgery_standard"]<-1
+  }
+}
+seer_final["surgery_recommended"]<-ifelse(seer_final$Reason.no.cancer.directed.surgery %in% c("Not recommended","Not recommended, contraindicated due to other cond; autopsy only (1973-2002)"),0,1)
+seer_final["surgery_refused"]<-ifelse(seer_final$Reason.no.cancer.directed.surgery=="Recommended but not performed, patient refused" ,1,0) 
+seer_final["radiation_recommended"]<-ifelse(seer_final$Radiation.recode!="None/Unknown",1,0)
+seer_final["radiation_refused"]<-ifelse(seer_final$Radiation.recode=="Refused (1988+)" ,1,0)
+seer_final["chemotherapy_recommended"]<-ifelse(seer_final$Chemotherapy.recode..yes..no.unk.=="Yes",1,0)
+```
+
+```{r}
+seer_final["Diff_Reco_Sur"]<-ifelse(seer_final$surgery_recommended!=seer_final$surgery_standard,1,0)
+seer_final["Diff_Reco_Rad"]<-ifelse(seer_final$radiation_recommended!=seer_final$radiation_standard,1,0)
+seer_final["Diff_Reco_Chem"]<-ifelse(seer_final$chemotherapy_recommended!=seer_final$chemotherapy_standard,1,0)
+#colnames(seer_final)
+#str(seer_final)
+```
+
+### clean the colnames and data form
+```{r}
+seer_final = seer_final[,-c(9,14,16,21,22,23,24,29,31,33,43,44)]
+
+# rename the col
+colnames(seer_final)[1:32]=c("Primary_Site","T_Stage","N_Stage","Therapy_1","Therapy_2","Therapy_3","Therapy_4","Therapy.5","Sex","Year","Registry_Region","County","Stage","Rad_Surg_Seq","Surgery","Radiation","Chemotherapy","Site_Death","Cause_Death","Survival_Months","Vital_Status","Race","Age","Insurance","Nine_Grade","High_School","Atleast_Bachlor","Person_Below_Poverty","Unemployed","Median_Household_Income","Language_Isolation","Primary_Site_Label")
+
+# transform as factor and numeric
+seer_final$Survival_Months = as.numeric(seer_final$Survival_Months)
+seer_final$Nine_Grade = as.numeric(seer_final$Nine_Grade)
+seer_final$High_School = as.numeric(seer_final$High_School)
+seer_final$Atleast_Bachlor = as.numeric(seer_final$Atleast_Bachlor)
+seer_final$Person_Below_Poverty = as.numeric(seer_final$Person_Below_Poverty)
+seer_final$Unemployed = as.numeric(seer_final$Unemployed)
+seer_final$Median_Household_Income = as.numeric(seer_final$Median_Household_Income)
+seer_final$Language_Isolation = as.numeric(seer_final$Language_Isolation)
+
+seer_final$Race%<>%as.factor()
+seer_final$Insurance%<>%factor()
+seer_final$Sex%<>%factor
+
+#Remove Unknown row
+seer_final %<>%subset(Race %in% c("White","Black","Asian or Pacific Islander","American Indian/Alaska Native"))
+seer_final[,c(25:29,31)]<-seer_final[,c(25:29,31)]/10000
+seer_final$Median_Household_Income=(seer_final$Median_Household_Income-min(seer_final$Median_Household_Income))/(max(seer_final$Median_Household_Income)-min(seer_final$Median_Household_Income))
+
+write.csv(seer_final,"seer_final.csv") # for modeling
+```
+
