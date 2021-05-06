@@ -81,7 +81,7 @@ radiation_refused:  1 indicates the patient refused recommended radiation
 # Exploratory Data Analysis
 
 ```{r}
-seer<- read.csv("D:/seer/SeerGroup12/seer_final.csv",header = T)
+seer<- read.csv("seer_final.csv",header = T)
 ```
 
 ```{r}
@@ -126,18 +126,27 @@ seer%>%group_by(Race,Sex)%>%summarise(count=n())%>%group_by(Race)%>%
 ```
 
 ```{r}
+library(ggthemes)
+#devtools::install_github('cttobin/ggthemr')
+library(ggthemr)
+library(scales)
+ggthemr('dust',type = "outer")
+
 #,fig.height=3,fig.width=4}
 ggplot(g1,aes(x=Race,y=count,fill=Sex))+
   geom_histogram(stat="identity",position = "stack")+
-  geom_text(mapping = aes(label =round(percent,2)), size = 4, colour = 'black',
-            position = position_stack())+
-  #theme(axis.text.x  = element_text(angle=30, vjust=0.5))
-  scale_x_discrete(guide = guide_axis(n.dodge=2)) 
+    coord_flip()+
+  geom_text(mapping = aes(label =round(percent,2)), size = 3,colour = 'black',
+            position = position_stack(0.6))
+  
 ```
 The density plot below, on the other hand, shows that among head and neck patients, different races have different distributions. In general, patients from white people are older, while Asian or Pacific Islander have the youngest patients.
 ```{r}
 
-ggplot(seer,aes(fill=Race,col=Race,x=Age))+ geom_density(alpha=.2)
+ggthemr_reset()
+ggplot(seer,aes(fill=Race,col=Race,x=Age))+ geom_density(alpha=.2)+
+theme(panel.background = element_rect(fill = 'white'))+
+theme_wsj(base_size = 10)
 ```
 In the boxplot below, we can also tell that different races have different distributions of Insurance. For example, white people generally have less Any Medicaid.
 ```{r,echo=FALSE,message=FALSE}
@@ -150,16 +159,21 @@ ggplot(g2,aes(x=Race,y=count,fill=Insurance))+
   geom_text(mapping = aes(label =round(percent,2)), size = 2, colour = 'black',
             position = position_stack(0.6))+
   #theme(axis.text.x  = element_text(angle=30, vjust=0.5))
-  scale_x_discrete(guide = guide_axis(n.dodge=2)) 
+  scale_x_discrete(guide = guide_axis(n.dodge=2)) +
+  theme(
+        axis.text.x =element_text(vjust=0.5))
 ```
 
 In the line chart below, NineGrade stands for average countywide percentage of residents with only ninth grade of education level and the same is true for HighSchool, and Bachelor stands for average countywide percentage of residents with at least a bachelor’s degree of education level. BelowPoverty and Unemployed stands for the average countywide percentage of residents’ poverty rate and unemployment rate. LanguageIsolation stands for the average countrywide percentage of residents to be linguistically isolated when a household with all members above the age of 14 speak non-English language or speak English less than “very well”.
 
 ```{r,echo=FALSE}
+ggthemr_reset()
 race_percent<- ggplot(data=melt_race)+
   geom_line(mapping=aes(x=Race,y=value,group=community,color=community))+
   scale_x_discrete(guide = guide_axis(n.dodge=2)) +
-  labs(title="Community Information to different Races", x="Race",y="Percentage" )
+  labs(title="Community Information to different Races", x="Race",y="Percentage" )+
+  theme(panel.background = element_rect(fill = 'white'))+
+theme_wsj(base_size = 8)
 race_percent
 ```
 
@@ -272,6 +286,22 @@ output %>%
 
 Similarly, in the Diff_Reco_Rad and Diff_Reco_Chem model, the coefficient of Age is statistically significant. Doctors are more likely to make different radiation and chemotherapy decisions from the NCCN guidelines standard on older patients.
 
+```{r}
+pre1 <- predict(fit1,type='response')
+plot.roc(seer$Diff_Reco_Sur, pre1,main="Surgery ROC Curve", percent=TRUE,print.auc=TRUE,ci=TRUE,of="thresholds",thresholds="best",print.thres="best")
+pre11 <- predict(fit11,type='response')
+plot.roc(seer$Diff_Reco_Rad, pre1,main="Radiation ROC Curve", percent=TRUE,print.auc=TRUE,ci=TRUE,of="thresholds",thresholds="best",print.thres="best")
+pre111 <- predict(fit111,type='response')
+plot.roc(seer$Diff_Reco_Chem, pre1,main="Chem ROC Curve", percent=TRUE,print.auc=TRUE,ci=TRUE,of="thresholds",thresholds="best",print.thres="best")
+rocplot1 <- roc(seer$Diff_Reco_Sur,pre1)
+ci.auc(rocplot1)
+rocplot11 <- roc(seer$Diff_Reco_Rad,pre11)
+ci.auc(rocplot1)
+rocplot111 <- roc(seer$Diff_Reco_Chem,pre111)
+ci.auc(rocplot1)
+```
+This is the validation for logistic regression. According to AUC and  ROC, the model is not a perfect classifier, but since we are aiming at inference instead of prediction. We focus more on if the coefficients are positive or negative and if it is significant or not. So the result is acceptable for our analysis.
+
 ### Topic 2: difference between the recommended and patient’s attitude
 
 Why were there differences between the actual treatment and guideline standard? It not only related to the doctors’ bias, but also to the patients’ attitude and behaviour. After researching doctors’ therapy decisions, we would like to research the patients’ attitude towards the doctors’ decisions. Specifically, our goal was to define which kind of patients tend to refuse doctors’ recommendation of surgery and radiation.
@@ -299,9 +329,9 @@ colnames(output2) <- c('Surgery_refused','p_value','Radiation_refused','p_value'
 output2 %>%
   kbl() %>%
   kable_classic(full_width = F, html_font = "Cambria") %>%
-  footnote(general = "The table above is the summary output of different Logistic Regression models.",
-           general_title = "Table 2: ")
+  footnote(general = "The table above is the summary output of different Logistic Regression models.",general_title = "Table 2: ")
 ```
+
 
 ### Topic 3: Vital Status
 
