@@ -26,6 +26,13 @@ library(ggstance)
 library(kableExtra)
 library(gridExtra)
 library(randomForest)
+<<<<<<< HEAD
+<<<<<<< HEAD
+library(arm)
+=======
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
+=======
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
 ```
 
 # Introduction
@@ -47,6 +54,13 @@ After transformation, we joined the NCCN guidelines dataset with SEER, so that w
 In the dataset, there are columns describing reasons for surgery and radiation. 
 
 For the reason of surgery, the values are : 
+<<<<<<< HEAD
+<<<<<<< HEAD
+
+=======
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
+=======
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
 [1] "Surgery performed"                                                           
 [2] "Not recommended"                                                             
 [3] "Recommended, unknown if performed"                                           
@@ -54,9 +68,23 @@ For the reason of surgery, the values are :
 [5] "Recommended but not performed, unknown reason"                               
 [6] "Recommended but not performed, patient refused"                              
 [7] "Not performed, patient died prior to recommended surgery".
+<<<<<<< HEAD
+<<<<<<< HEAD
+
 We decided that the value "Not recommended" and "Not recommended, contraindicated due to other cond; autopsy only (1973-2002)" suggests the doctor didn’t recommend surgery, while the others suggest the doctor did. 
 
 For the reason of radiation, the values are:
+
+=======
+We decided that the value "Not recommended" and "Not recommended, contraindicated due to other cond; autopsy only (1973-2002)" suggests the doctor didn’t recommend surgery, while the others suggest the doctor did. 
+
+For the reason of radiation, the values are:
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
+=======
+We decided that the value "Not recommended" and "Not recommended, contraindicated due to other cond; autopsy only (1973-2002)" suggests the doctor didn’t recommend surgery, while the others suggest the doctor did. 
+
+For the reason of radiation, the values are:
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
 [1] "Beam radiation"                                       
 [2] "None/Unknown"                                         
 [3] "Radiation, NOS  method or source not specified"       
@@ -82,6 +110,13 @@ radiation_refused:  1 indicates the patient refused recommended radiation
 
 ```{r}
 seer<- read.csv("seer_final.csv",header = T)
+<<<<<<< HEAD
+<<<<<<< HEAD
+seer = seer[,-1]
+=======
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
+=======
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
 ```
 
 ```{r}
@@ -94,6 +129,19 @@ seer$Unemployed%<>%as.numeric()
 seer$Median_Household_Income%<>%as.numeric()
 seer$Language_Isolation%<>%as.numeric()
 seer$Survival_Months%<>%as.numeric()
+<<<<<<< HEAD
+<<<<<<< HEAD
+
+seer$Vital_Status%<>%as.factor()
+seer_final$Race%<>%as.factor()
+seer_final$Insurance%<>%factor()
+seer_final$Sex%<>%factor
+```
+
+```{r}
+=======
+=======
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
 seer$Vital_Status%<>%as.factor()
 
 
@@ -108,6 +156,10 @@ seer$Language_Isolation = seer$Language_Isolation/100
 
 ```{r}
 
+<<<<<<< HEAD
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
+=======
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
 race_community<- sqldf("select Race, avg(Nine_Grade) as NineGrade, avg(High_School) as HighSchool, avg(Atleast_Bachlor) as Bachlor, avg(Person_Below_Poverty) as BelowPoverty, avg(Unemployed) as Unemployed, avg(Median_Household_Income) as Income, avg(Language_Isolation) as LanguageIsolation from seer
                        group by Race")
 
@@ -136,6 +188,23 @@ ggthemr('dust',type = "outer")
 ggplot(g1,aes(x=Race,y=count,fill=Sex))+
   geom_histogram(stat="identity",position = "stack")+
     coord_flip()+
+<<<<<<< HEAD
+<<<<<<< HEAD
+  labs(title="Patients' Race and Sex")+
+  geom_text(mapping = aes(label =round(percent,2)), size = 3,colour = 'black',
+            position = position_stack(0.6))
+```
+The density plot below, on the other hand, shows that among head and neck patients, different races have different distributions. In general, patients from white people are older, while Asian or Pacific Islander have the youngest patients.
+```{r}
+ggthemr_reset() # for theme
+
+ggplot(seer,aes(fill=Race,col=Race,x=Age))+ geom_density(alpha=.1)+
+theme(panel.background = element_rect(fill = 'white'))+
+labs(title="Race Distribution")+
+theme_wsj(base_size = 9)
+=======
+=======
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
   geom_text(mapping = aes(label =round(percent,2)), size = 3,colour = 'black',
             position = position_stack(0.6))
   
@@ -147,6 +216,10 @@ ggthemr_reset()
 ggplot(seer,aes(fill=Race,col=Race,x=Age))+ geom_density(alpha=.2)+
 theme(panel.background = element_rect(fill = 'white'))+
 theme_wsj(base_size = 10)
+<<<<<<< HEAD
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
+=======
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
 ```
 In the boxplot below, we can also tell that different races have different distributions of Insurance. For example, white people generally have less Any Medicaid.
 ```{r,echo=FALSE,message=FALSE}
@@ -154,14 +227,32 @@ seer%>%group_by(Insurance,Race)%>%summarise(count=n())%>%group_by(Race)%>%summar
 ```
 
 ```{r}
+<<<<<<< HEAD
+<<<<<<< HEAD
+ggthemr('dust',type = "outer")
+
+=======
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
+=======
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
 ggplot(g2,aes(x=Race,y=count,fill=Insurance))+
   geom_histogram(stat="identity",position = "stack")+
   geom_text(mapping = aes(label =round(percent,2)), size = 2, colour = 'black',
             position = position_stack(0.6))+
   #theme(axis.text.x  = element_text(angle=30, vjust=0.5))
   scale_x_discrete(guide = guide_axis(n.dodge=2)) +
+<<<<<<< HEAD
+<<<<<<< HEAD
+  labs(title="Insurance Information to different Races")+
+  theme( axis.text.x =element_text(vjust=0.5,size = 8))
+=======
   theme(
         axis.text.x =element_text(vjust=0.5))
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
+=======
+  theme(
+        axis.text.x =element_text(vjust=0.5))
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
 ```
 
 In the line chart below, NineGrade stands for average countywide percentage of residents with only ninth grade of education level and the same is true for HighSchool, and Bachelor stands for average countywide percentage of residents with at least a bachelor’s degree of education level. BelowPoverty and Unemployed stands for the average countywide percentage of residents’ poverty rate and unemployment rate. LanguageIsolation stands for the average countrywide percentage of residents to be linguistically isolated when a household with all members above the age of 14 speak non-English language or speak English less than “very well”.
@@ -170,7 +261,14 @@ In the line chart below, NineGrade stands for average countywide percentage of r
 ggthemr_reset()
 race_percent<- ggplot(data=melt_race)+
   geom_line(mapping=aes(x=Race,y=value,group=community,color=community))+
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
   scale_x_discrete(guide = guide_axis(n.dodge=2)) +
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
+=======
+  scale_x_discrete(guide = guide_axis(n.dodge=2)) +
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
   labs(title="Community Information to different Races", x="Race",y="Percentage" )+
   theme(panel.background = element_rect(fill = 'white'))+
 theme_wsj(base_size = 8)
@@ -180,11 +278,26 @@ race_percent
 From the line chart above we can see that NineGrade, HighSchool, Bachelor and LanguageIsolation shows a similar pattern towards Race. It is a vague impression on how these features vary between different races, so we call this pattern with a relatively higher value for Asian or Pacific Islander and a relatively lower value for some other races like American Indian/Alaska Native or Black pattern 1 for better illustration. While BelowPoverty and Unemployed shows a similar pattern which is opposite from pattern 1, and we call this pattern 2. The income information is also similar to pattern 1 as you can see below, where Income stands for average countywide household income.
 
 ```{r,echo=FALSE}
+<<<<<<< HEAD
+<<<<<<< HEAD
+ggthemr('dust',type = "outer")
+
+race_income<- ggplot(data=race_community)+
+  geom_bar(aes(x=Race,y=Income,fill=Race),stat="identity")+
+  labs(title="Average Income to different Races", x="Race",fill="Race")+
+  theme(legend.position = 'none',plot.title = element_text(size=12,hjust = 0.5),axis.text.x = element_text(size=8))
+=======
+=======
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
 race_income<- ggplot(data=race_community)+
   geom_bar(aes(x=Race,y=Income,fill=Race),stat="identity")+
   scale_x_discrete(guide = guide_axis(n.dodge=2)) +
   labs(title="Average Income to different Races", x="Race",fill="Race")+
   theme(legend.position = 'none',plot.title = element_text(size=10,hjust = 0.5))
+<<<<<<< HEAD
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
+=======
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
 race_income
 ```
 
@@ -193,12 +306,27 @@ To combine the demographic information together with clinical information, we al
 
 ```{r}
 race_survival<- ggplot(data=seer, aes(x = Race, y = as.numeric(Survival_Months), fill =Race)) +
+<<<<<<< HEAD
+<<<<<<< HEAD
+        geom_boxplot(alpha=0.6) +
+        scale_y_continuous(name = "Survival Month")+
+        #scale_x_discrete(name = "Race")+
+        labs(title="Average Survival Months to Different Races", fill="Race")+
+  theme(legend.position = 'none',plot.title = element_text(size=12,hjust = 0.5),axis.text.x = element_text(size=8))
+race_survival
+=======
+=======
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
         geom_boxplot(alpha=0.7) +
         scale_y_continuous(name = "Survival Month")+
         #scale_x_discrete(name = "Race")+
         scale_x_discrete(guide = guide_axis(n.dodge=2)) +
         labs(title="Average Survival Months to Different Races", fill="Race")+
   theme(legend.position = 'none',plot.title = element_text(size=10,hjust = 0.5))
+<<<<<<< HEAD
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
+=======
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
 ```
 
 Apart from survival months, we also took the death rate directly attributable to this cancer into consideration. The Death_Rate in the next histogram stands for the proportion of death that is directly caused by this cancer over all patients within a race. 
@@ -215,6 +343,18 @@ for (i in 1:7286){
 death2<- sqldf("select Race, avg(dead) as Death_Rate from death group by Race")
 race_death<- ggplot(data=death2)+
   geom_bar(aes(x=Race,y=Death_Rate,fill=Race),stat="identity")+
+<<<<<<< HEAD
+<<<<<<< HEAD
+  labs(title="Death Rate Attributable by This Cancer", x="Race",y="Death_Rate",fill="Race")+
+  theme(legend.position = 'none',plot.title = element_text(size=10,hjust = 0.5),axis.text.x = element_text(size=8))
+race_death
+```
+
+```{r}
+#grid.arrange(race_survival,race_death,ncol = 2)
+=======
+=======
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
   scale_x_discrete(guide = guide_axis(n.dodge=2)) +
   labs(title="Death Rate Attributable by This Cancer", x="Race",y="Death_Rate",fill="Race")+
   theme(legend.position = 'none',plot.title = element_text(size=10,hjust = 0.5))
@@ -222,6 +362,10 @@ race_death<- ggplot(data=death2)+
 
 ```{r}
 grid.arrange(race_survival,race_death,ncol = 2)
+<<<<<<< HEAD
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
+=======
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
 ```
 
 
@@ -257,7 +401,14 @@ The first step, we wondered whether the doctors had bias towards patients in dif
 According to our results from the logistic regression, the coefficients of Age and Langauge_Isolation are statistically significant. On the one hand, doctors are more likely to make different surgery decisions from the NCCN guidelines standard on older patients. On the other hand, the lower percent of households in language isolation is, the higher possibility for doctors to make biased surgery decisions. (The Census Bureau considers a household to be linguistically isolated when all members above the age of 14 speak a non-English language and speaks English less than “very well”.)
 
 ```{r}
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
 
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
+=======
+
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
 fit1=glm(Diff_Reco_Sur ~ Race+Age+Nine_Grade+Atleast_Bachlor+Person_Below_Poverty+Unemployed+Median_Household_Income+Language_Isolation,data = seer,family=binomial(link="logit"))
 #summary(fit1)
 
@@ -284,15 +435,58 @@ output %>%
            general_title = "Table 1: ")
 ```
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+Below is the validation for logistic regression. According to AUC and  ROC, the model is not a perfect classifier, but since we are aiming at inference instead of prediction. We focus more on if the coefficients are positive or negative and if it is significant or not. So the result is acceptable for our analysis. The residual plots show some kind of patterns, which will be discussed later in Discussion.
+
+```{r fig.width= 4,fig.height= 2}
+par(mfrow=c(2,3))
+prob1<-fitted(fit1)
+resid1<-residuals(fit1)
+binnedplot(prob1,resid1)
+
+prob11<-fitted(fit11)
+resid11<-residuals(fit11)
+binnedplot(prob11,resid11)
+
+prob111<-fitted(fit111)
+resid111<-residuals(fit111)
+binnedplot(prob111,resid111)
+
+library(pROC)
+=======
 Similarly, in the Diff_Reco_Rad and Diff_Reco_Chem model, the coefficient of Age is statistically significant. Doctors are more likely to make different radiation and chemotherapy decisions from the NCCN guidelines standard on older patients.
 
 ```{r}
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
+=======
+Similarly, in the Diff_Reco_Rad and Diff_Reco_Chem model, the coefficient of Age is statistically significant. Doctors are more likely to make different radiation and chemotherapy decisions from the NCCN guidelines standard on older patients.
+
+```{r}
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
 pre1 <- predict(fit1,type='response')
 plot.roc(seer$Diff_Reco_Sur, pre1,main="Surgery ROC Curve", percent=TRUE,print.auc=TRUE,ci=TRUE,of="thresholds",thresholds="best",print.thres="best")
 pre11 <- predict(fit11,type='response')
 plot.roc(seer$Diff_Reco_Rad, pre1,main="Radiation ROC Curve", percent=TRUE,print.auc=TRUE,ci=TRUE,of="thresholds",thresholds="best",print.thres="best")
 pre111 <- predict(fit111,type='response')
 plot.roc(seer$Diff_Reco_Chem, pre1,main="Chem ROC Curve", percent=TRUE,print.auc=TRUE,ci=TRUE,of="thresholds",thresholds="best",print.thres="best")
+<<<<<<< HEAD
+<<<<<<< HEAD
+
+#rocplot1 <- roc(seer$Diff_Reco_Sur,pre1)
+#ci.auc(rocplot1)
+#rocplot11 <- roc(seer$Diff_Reco_Rad,pre11)
+#ci.auc(rocplot11)
+#rocplot111 <- roc(seer$Diff_Reco_Chem,pre111)
+#ci.auc(rocplot111)
+```
+
+
+
+Similarly, in the Diff_Reco_Rad and Diff_Reco_Chem model, the coefficient of Age is statistically significant. Doctors are more likely to make different radiation and chemotherapy decisions from the NCCN guidelines standard on older patients.
+=======
+=======
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
 rocplot1 <- roc(seer$Diff_Reco_Sur,pre1)
 ci.auc(rocplot1)
 rocplot11 <- roc(seer$Diff_Reco_Rad,pre11)
@@ -301,6 +495,10 @@ rocplot111 <- roc(seer$Diff_Reco_Chem,pre111)
 ci.auc(rocplot1)
 ```
 This is the validation for logistic regression. According to AUC and  ROC, the model is not a perfect classifier, but since we are aiming at inference instead of prediction. We focus more on if the coefficients are positive or negative and if it is significant or not. So the result is acceptable for our analysis.
+<<<<<<< HEAD
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
+=======
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
 
 ### Topic 2: difference between the recommended and patient’s attitude
 
@@ -329,9 +527,49 @@ colnames(output2) <- c('Surgery_refused','p_value','Radiation_refused','p_value'
 output2 %>%
   kbl() %>%
   kable_classic(full_width = F, html_font = "Cambria") %>%
+<<<<<<< HEAD
+<<<<<<< HEAD
+  footnote(general = "The table above is the summary output of different Logistic Regression models.",
+           general_title = "Table 2: ")
+```
+
+Below is the validation for logistic regression. It’s similar to the validation in topic 1. We will discuss more about  this problem in the next  part of our report.
+
+```{r }
+par(mfrow=c(2,2))
+
+prob2<-fitted(fit2)
+resid2<-residuals(fit2)
+binnedplot(prob2,resid2)
+
+prob22<-fitted(fit22)
+resid22<-residuals(fit22)
+binnedplot(prob22,resid22)
+
+library(pROC)
+pre2 <- predict(fit2,type='response')
+plot.roc((seer %>% filter(surgery_recommended ==1))$surgery_refused, pre2,main="Surgery ROC Curve", percent=TRUE,print.auc=TRUE,ci=TRUE,of="thresholds",thresholds="best",print.thres="best")
+
+pre22 <- predict(fit22,type='response')
+plot.roc((seer %>% filter(radiation_recommended ==1))$radiation_refused, pre22,main="Radiation ROC Curve", percent=TRUE,print.auc=TRUE,ci=TRUE,of="thresholds",thresholds="best",print.thres="best")
+
+
+#rocplot2 <- roc(seer$surgery_refused,pre2)
+#ci.auc(rocplot2)
+#rocplot22 <- roc(seer$radiation_refused,pre22)
+#ci.auc(rocplot22)
+
+```
+=======
   footnote(general = "The table above is the summary output of different Logistic Regression models.",general_title = "Table 2: ")
 ```
 
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
+=======
+  footnote(general = "The table above is the summary output of different Logistic Regression models.",general_title = "Table 2: ")
+```
+
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
 
 ### Topic 3: Vital Status
 
@@ -364,6 +602,22 @@ From the results, we can tell that deviation from standard therapy does have som
 
 To validate our inference, we applied a random forest model on the data, to identify the importance of variables to survival months and vital status. 
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+```{r fig.width=6,fig.height=3}
+par(mfrow =c(1,2))
+#rf=randomForest(Survival_Months ~ Diff_Reco_Rad+Diff_Reco_Sur+Diff_Reco_Chem+radiation_refused+surgery_refused+Race+Age+Nine_Grade+Atleast_Bachlor+Person_Below_Poverty+Unemployed+Median_Household_Income+Language_Isolation,data = seer)
+#summary(rf)
+varImpPlot(x=rf,sort=TRUE,n.var=nrow(rf$importance),main="Importance")
+
+#rf2=randomForest(Vital_Status ~ Diff_Reco_Rad+Diff_Reco_Sur+Diff_Reco_Chem+radiation_refused+surgery_refused+Race+Age+Nine_Grade+Atleast_Bachlor+Person_Below_Poverty+Unemployed+Median_Household_Income+Language_Isolation,data = seer)
+#summary(rf2)
+varImpPlot(x=rf2,sort=TRUE,n.var=nrow(rf$importance),main="Importance")
+
+
+=======
+=======
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
 ```{r}
 rf=randomForest(Survival_Months ~ Diff_Reco_Rad+Diff_Reco_Sur+Diff_Reco_Chem+radiation_refused+surgery_refused+Race+Age+Nine_Grade+Atleast_Bachlor+Person_Below_Poverty+Unemployed+Median_Household_Income+Language_Isolation,data = seer)
 #summary(rf)
@@ -374,6 +628,10 @@ varImpPlot(x=rf,sort=TRUE,n.var=nrow(rf$importance),main="Importance")
 rf2=randomForest(Vital_Status ~ Diff_Reco_Rad+Diff_Reco_Sur+Diff_Reco_Chem+radiation_refused+surgery_refused+Race+Age+Nine_Grade+Atleast_Bachlor+Person_Below_Poverty+Unemployed+Median_Household_Income+Language_Isolation,data = seer)
 #summary(rf2)
 varImpPlot(x=rf2,sort=TRUE,n.var=nrow(rf$importance),main="Importance")
+<<<<<<< HEAD
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
+=======
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
 ```
 
 
@@ -390,6 +648,16 @@ Specifically, the bias of therapy decisions from standard is more likely related
 
 In the topic 1 part, we found that language isolation and the different surgery recommendation from NCCN guidelines standard were negatively related. But we cannot say the higher language isolation directly represents the lower socioeconomic status, thus we cannot say that the lower socioeconomic status, the lower the bias of therapy decisions.
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+There are also some limitations in our analysis. First, the sequence of therapy is not considered in our analysis. In the seer dataset, the sequence of radiation and surgery is way more complicated than that in NCCN guidelines. In NCCN guidelines, there are only two sequences: radiation after surgery and surgery after radiation. However,  in the SEER dataset, radiation might be used before and after surgery, or even during surgery. Therefore, it requires more medical knowledge to determine if the actual therapy given is different from the standard guidelines. In addition, since we are not familiar with the TNM stage, there might be some mistakes when identifying the T stage and N stage of the patient. Furthermore, in the modeling part, although we have reduced multicollinearity to an acceptable level, there are still some correlations between variables. It might have affected the model accuracy to some extent. 
+
+Moreover, there might have been some patterns that the current model didn’t explain. In figure 8 there are binned residuals plots for the three logistic regression models. Overall the points are within the boundaries. Nevertheless, the first plot shows that there might be some higher-order relationships between the response variables and the predictors. The third plot shows the average residuals tend to be negative. Therefore, it requires further research on the dataset and the modeling to figure the relationship between responses and predictors. In figure 9, the residual plot shows a clear pattern, indicating that the link function might be inappropriate. Therefore, the validation of models in topic 2 is questionable.
+
+Apart from residual plot, we also plotted ROC curves and calculated the AUC. According to AUC and  ROC, the model is not a perfect classifier with 95% confidence interval lies between 0.6 and 0.7. But since we are aiming at inference instead of prediction. We focus more on if the coefficients are positive or negative and if it is significant or not. So the result is acceptable for our analysis.
+=======
+=======
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
 
 # Reference
 
@@ -398,5 +666,9 @@ http://www.sthda.com/english/articles/39-regression-model-diagnostics/160-multic
 Multicollinearity Essentials and VIF in R - Articles
 Multicollinearity in R
 Correlations Analysis 
+<<<<<<< HEAD
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
+=======
+>>>>>>> c040499e1acf8101b144a77314d2f371d9f1117d
 
 
